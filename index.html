@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoveWalls 💋</title>
+    
+    <style>
+        :root { --main: #ff007f; --glow: 0 0 20px #ff007f; }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; background: #000; color: white; transition: 0.5s;
+            overflow-x: hidden; background: radial-gradient(circle at center, #1a000a, #000);
+        }
+
+        /* Bold Neon Themes */
+        body.pink { --main: #ff007f; --glow: 0 0 30px #ff007f; }
+        body.purple { --main: #bc00ff; --glow: 0 0 30px #bc00ff; }
+        body.cyan { --main: #00f2ff; --glow: 0 0 30px #00f2ff; }
+
+        header { width: 100%; padding: 30px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .logo { font-size: 2.2rem; font-weight: 900; text-shadow: var(--glow); color: var(--main); letter-spacing: 3px; text-transform: uppercase; }
+
+        .theme-hearts { display: flex; gap: 10px; }
+        .heart-btn { background: none; border: none; font-size: 28px; cursor: pointer; filter: drop-shadow(var(--glow)); transition: 0.3s; }
+
+        .card {
+            background: rgba(0, 0, 0, 0.7); border: 3px solid var(--main);
+            box-shadow: var(--glow), inset 0 0 20px var(--main); backdrop-filter: blur(20px);
+            padding: 30px; margin-top: 10px; width: 92%; max-width: 420px;
+            border-radius: 30px; text-align: center; z-index: 5;
+        }
+
+        h2 { font-weight: 800; text-shadow: var(--glow); text-transform: uppercase; margin-bottom: 20px; }
+
+        input, textarea {
+            width: 100%; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--main); color: white; border-radius: 15px; outline: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5); font-size: 1rem;
+        }
+
+        .primary-btn {
+            width: 100%; padding: 18px; background: var(--main); color: white;
+            font-weight: 900; border: none; border-radius: 15px; cursor: pointer;
+            box-shadow: var(--glow); transition: 0.3s; margin: 10px 0; font-size: 1.1rem;
+        }
+
+        .share-btn { background: #25d366; box-shadow: 0 0 20px #25d366; }
+
+        .note-wrapper { margin-bottom: 20px; border-radius: 20px; background: rgba(0,0,0,0.8); padding: 20px; text-align: left; border: 2px solid var(--main); box-shadow: var(--glow); position: relative; }
+        .note-wrapper b { color: var(--main); text-shadow: 0 0 5px var(--main); display: block; margin-bottom: 5px; }
+
+        /* Neon Toast Alert */
+        #neonToast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); border: 2px solid var(--main);
+            box-shadow: var(--glow); padding: 20px 40px; border-radius: 50px;
+            z-index: 1000; transition: 0.5s ease; color: white; font-weight: bold;
+        }
+
+        .hidden { display: none !important; }
+        
+        .falling { position: fixed; top: -10%; font-size: 25px; animation: fall linear forwards; z-index: 100; pointer-events: none; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+        .admin-link { margin-top: 30px; font-size: 0.9rem; color: var(--main); cursor: pointer; text-decoration: underline; font-weight: bold; }
+    </style>
+</head>
+<body class="pink">
+
+    <div id="neonToast">💋 Love & Kisses Sent!</div>
+
+    <header>
+        <div class="logo">LoveWalls</div>
+        <div class="theme-hearts">
+            <button class="heart-btn" onclick="setTheme('pink')">💗</button>
+            <button class="heart-btn" onclick="setTheme('purple')">💜</button>
+            <button class="heart-btn" onclick="setTheme('cyan')">💙</button>
+        </div>
+    </header>
+
+    <section class="card" id="startCard">
+        <h2>Open A Wall</h2>
+        <input type="text" id="wallInput" placeholder="Wall Name (e.g. MyLoveWall)">
+        <button class="primary-btn" onclick="openWall()">Open Wall 💋</button>
+        <div class="admin-link" onclick="showAdminLogin()">🔒 OWNER LOGIN</div>
+    </section>
+
+    <section class="card hidden" id="writeCard">
+        <h2 id="wallLabel"></h2>
+        <input type="text" id="senderName" placeholder="Your Name (Optional)">
+        <textarea id="message" rows="5" placeholder="Express your love... Send me kisses! 💋"></textarea>
+        <button class="primary-btn" onclick="sendNote()">Send Love 💌</button>
+        <button class="primary-btn share-btn" onclick="shareWall()">📲 Post to Status</button>
+        <p onclick="location.reload()" style="cursor:pointer; opacity: 0.6;">Cancel</p>
+    </section>
+
+    <section class="card hidden" id="adminCard">
+        <h2>Secret Box Login</h2>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Pick a name & PIN. If new, they will be saved as yours!</p>
+        <input type="text" id="loginWallName" placeholder="Wall Name">
+        <input type="password" id="loginPin" placeholder="Create or Enter PIN">
+        <button class="primary-btn" onclick="loginToAdmin()">Unlock Inbox 🔐</button>
+        <p onclick="location.reload()" style="cursor:pointer; opacity: 0.6;">Go Back</p>
+    </section>
+
+    <section id="inbox" class="hidden" style="width:95%; max-width:450px; margin-bottom: 50px;">
+        <h2 style="text-align:center;">📥 Received Notes</h2>
+        <div id="msgContainer"></div>
+        <button class="primary-btn" onclick="location.reload()" style="background:#222; box-shadow:none;">Logout</button>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, deleteDoc, doc, setDoc, getDoc } 
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW5aty3XKu44QJuKY7Xc3zzBYQ16vP6I",
+            authDomain: "lovewalls-7d774.firebaseapp.com",
+            projectId: "lovewalls-7d774",
+            storageBucket: "lovewalls-7d774.firebasestorage.app",
+            messagingSenderId: "740522671360",
+            appId: "1:740522671360:web:537eab2fbf579f0be1c7e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let activeWall = "";
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const w = params.get('wall');
+            if(w) { document.getElementById('wallInput').value = w; openWall(); }
+        };
+
+        window.setTheme = (t) => { document.body.className = t; };
+
+        window.openWall = () => {
+            activeWall = document.getElementById("wallInput").value.trim().toLowerCase();
+            if(!activeWall) return;
+            document.getElementById("startCard").classList.add("hidden");
+            document.getElementById("writeCard").classList.remove("hidden");
+            document.getElementById("wallLabel").innerText = activeWall.toUpperCase();
+        };
+
+        window.showAdminLogin = () => {
+            document.getElementById("startCard").classList.add("hidden");
+            document.getElementById("adminCard").classList.remove("hidden");
+        };
+
+        window.loginToAdmin = async () => {
+            const wall = document.getElementById("loginWallName").value.trim().toLowerCase();
+            const pin = document.getElementById("loginPin").value.trim();
+            if(!wall || !pin) return;
+
+            const wallRef = doc(db, "final_user_walls", wall);
+            const wallSnap = await getDoc(wallRef);
+
+            if (wallSnap.exists()) {
+                if (wallSnap.data().pin === pin) { loadInbox(wall); } 
+                else { alert("Incorrect PIN!"); }
+            } else {
+                if(confirm("Create this wall with PIN: " + pin + "?")) {
+                    await setDoc(wallRef, { pin: pin });
+                    loadInbox(wall);
+                }
+            }
+        };
+
+        function loadInbox(wallName) {
+            activeWall = wallName;
+            document.getElementById("adminCard").classList.add("hidden");
+            document.getElementById("inbox").classList.remove("hidden");
+            const q = query(collection(db, "final_user_msgs"), where("wall", "==", wallName), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                const cont = document.getElementById("msgContainer");
+                cont.innerHTML = "";
+                snap.forEach((d) => {
+                    const data = d.data();
+                    cont.innerHTML += `<div class="note-wrapper">
+                        <b>From: ${data.sender || 'Anonymous'}</b>
+                        <p>${data.text}</p>
+                        <button onclick="window.del('${d.id}')" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
+                    </div>`;
+                });
+            });
+        }
+
+        window.sendNote = async () => {
+            const txt = document.getElementById("message").value.trim();
+            const sender = document.getElementById("senderName").value.trim();
+            if(!txt) return;
+
+            // Kiss Animation
+            for(let i=0; i<45; i++) spawnItem(true);
+
+            // Show Neon Toast
+            const toast = document.getElementById("neonToast");
+            toast.style.top = "50px";
+
+            await addDoc(collection(db, "final_user_msgs"), { 
+                wall: activeWall, 
+                sender: sender,
+                text: txt, 
+                timestamp: serverTimestamp() 
+            });
+            
+            setTimeout(() => { location.reload(); }, 2500);
+        };
+
+        window.del = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "final_user_msgs", id)); };
+
+        window.shareWall = () => {
+            const url = window.location.origin + window.location.pathname + "?wall=" + activeWall;
+            const text = `💋 Send me a secret love message on LoveWalls! Anonymous here: ` + url;
+            if (navigator.share) navigator.share({ title: 'LoveWalls', text: text, url: url });
+            else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+        };
+
+        function spawnItem(isKiss = false) {
+            const h = document.createElement("div"); h.className = "falling";
+            h.innerHTML = isKiss ? "💋" : "💖";
+            h.style.left = Math.random() * 100 + "vw";
+            h.style.animationDuration = (Math.random() * 2 + 1) + "s";
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 3000);
+        }
+
+        setInterval(() => spawnItem(false), 5000);
+    </script>
+</body>
+</html>
